@@ -1,0 +1,5 @@
+_BASE_: cafuser_swin_tiny_bs8_180k_muses_clre.yaml
+  
+MODEL:
+  FUSION:
+    TYPE: 'QueryGuidedAdditionFusion'

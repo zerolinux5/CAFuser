@@ -1,0 +1,9 @@
+_BASE_: cafuser_swin_tiny_bs8_200k_deliver_clde.yaml
+
+MODEL:
+  FUSION:
+    TYPE: 'QueryGuidedAdditionFusion'
+
+DATASETS:
+  DELIVER:
+    DILATION: [-1, 2, 3, -1]

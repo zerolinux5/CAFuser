@@ -1,0 +1,52 @@
+_BASE_: ../oneformer_R50_bs8_90k_muses.yaml
+  
+INPUT:
+  DATASET_MAPPER_NAME: "muses_unified"
+
+MODEL:
+  META_ARCHITECTURE: "CAFuser"
+  BACKBONE:
+    NAME: "D2SwinTransformer"
+  SWIN:
+    EMBED_DIM: 96
+    DEPTHS: [2, 2, 6, 2]
+    NUM_HEADS: [3, 6, 12, 24]
+    WINDOW_SIZE: 7
+    APE: False
+    DROP_PATH_RATE: 0.3
+    PATCH_NORM: True
+    PRETRAIN_IMG_SIZE: 224
+  WEIGHTS: "pretrained/swin_tiny_patch4_window7_224_22k.pkl"
+  PIXEL_MEAN: [123.675, 116.280, 103.530]
+  PIXEL_STD: [58.395, 57.120, 57.375]
+  CONDITION_CLASSIFIER:
+    ENABLED: True
+  FUSION:
+    TYPE: 'WeatherConditionedPCA'
+    QC:
+      CAT_QC_TO_QUERY: True
+      CAT_QC_TO_KEY: False
+    LEVELS: ['res5', 'res4', 'res3', 'res2']
+  FEATURE_ADAPTER:
+    ENABLED: True
+    NAME: 'MLPAdapterWithLearnableRatio'
+
+DATASETS:
+  MODALITIES:
+    CAMERA:
+      LOAD: True
+    LIDAR:
+      LOAD: True
+    EVENT_CAMERA:
+      LOAD: True
+    RADAR:
+      LOAD: True
+
+TEST:  
+    EVAL_PERIOD: 10000 
+
+SOLVER:
+  CHECKPOINT_PERIOD: 10000
+  MAX_ITER: 180000
+
+SEED: 0
