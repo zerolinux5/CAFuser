@@ -1,3 +1,4 @@
 from .muses_pan_evaluator import MUSESPanopticEvaluator
 from .muses_sem_evaluator import MUSESSemSegEvaluator
 from .deliver_sem_evaluator import DeliverSemSegEvaluator
+from .loss_eval_hook import LossEvalHook

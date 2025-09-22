@@ -20,7 +20,7 @@ class DeliverSemSegEvaluator(SemSegEvaluator):
 
     def reset(self):
         super().reset()
-        self._losses = []
+        # self._losses = []
 
     def process(self, inputs, outputs):
         """
@@ -40,10 +40,10 @@ class DeliverSemSegEvaluator(SemSegEvaluator):
 
             gt[gt == self._ignore_label] = self._num_classes
 
-            gt_tensor = torch.as_tensor(gt, dtype=torch.long, device=output["sem_seg"].device)
-            with torch.no_grad():
-                val_loss = self.loss_fn(output["semg_seg"].unsequeeze(0), gt_tensor.unsqueeze(0))
-            self._losses.append(val_loss.item())
+            # gt_tensor = torch.as_tensor(gt, dtype=torch.long, device=output["sem_seg"].device)
+            # with torch.no_grad():
+            #     val_loss = self.loss_fn(output["semg_seg"].unsequeeze(0), gt_tensor.unsqueeze(0))
+            # self._losses.append(val_loss.item())
 
             self._conf_matrix += np.bincount(
                 (self._num_classes + 1) * pred.reshape(-1) + gt.reshape(-1),
@@ -74,7 +74,7 @@ class DeliverSemSegEvaluator(SemSegEvaluator):
             synchronize()
             conf_matrix_list = all_gather(self._conf_matrix)
             b_conf_matrix_list = all_gather(self._b_conf_matrix)
-            loss_list = all_gather(self._losses)
+            # loss_list = all_gather(self._losses)
             self._predictions = all_gather(self._predictions)
             self._predictions = list(itertools.chain(*self._predictions))
             self.losses = list(itertools.chain(*loss_list))
@@ -137,8 +137,8 @@ class DeliverSemSegEvaluator(SemSegEvaluator):
             file_path = os.path.join(self._output_dir, "sem_seg_evaluation.pth")
             with PathManager.open(file_path, "wb") as f:
                 torch.save(res, f)
-        if len(self._losses > 0):
-            res["val_loss"] = float(np.mean(self._losses))
+        # if len(self._losses > 0):
+        #     res["val_loss"] = float(np.mean(self._losses))
         results = OrderedDict({"sem_seg": res})
         self._logger.info(results)
         return results

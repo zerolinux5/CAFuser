@@ -50,6 +50,7 @@ from cafuser.evaluation import (
     MUSESPanopticEvaluator,
     MUSESSemSegEvaluator,
     DeliverSemSegEvaluator,
+    LossEvalHook,
 )
 
 from detectron2.projects.deeplab import add_deeplab_config, build_lr_scheduler
@@ -163,7 +164,7 @@ class Trainer(DefaultTrainer):
         if evaluator_type == "deliver_semantic_seg":
             if cfg.MODEL.TEST.SEMANTIC_ON:
                 sem_seg_loading_fn = create_deliver_gt_sem_seg_loading_fn(cfg)
-                evaluator_list.append(DeliverSemSegEvaluator(dataset_name, distributed=True, output_dir=output_folder,
+                evaluator_list.append(SemSegEvaluator(dataset_name, distributed=True, output_dir=output_folder,
                                                         sem_seg_loading_fn=sem_seg_loading_fn))
             if cfg.MODEL.TEST.PANOPTIC_ON or cfg.MODEL.TEST.INSTANCE_ON:
                 raise Exception("The DELIVER segmentation dataset does not support panoptic or instance evaluation")
@@ -211,6 +212,19 @@ class Trainer(DefaultTrainer):
             return evaluator_list[0]
 
         return DatasetEvaluators(evaluator_list)
+                     
+    def build_hooks(self):
+        hooks = super().build_hooks()
+        hooks.insert(-1,LossEvalHook(
+            self.cfg.TEST.EVAL_PERIOD,
+            self.model,
+            build_detection_test_loader(
+                self.cfg,
+                self.cfg.DATASETS.TEST_SEMANTIC,
+                DELIVERSemanticDatasetMapper(self.cfg,False)
+            )
+        ))
+        return hooks
 
     @classmethod
     def build_train_loader(cls, cfg):
