@@ -370,7 +370,7 @@ class CAFuser(OneFormer):
                     if not self.sem_seg_postprocess_before_inference:
                         r = retry_if_cuda_oom(sem_seg_postprocess)(r, image_size, height, width)
                     processed_results[-1]["sem_seg"] = r
-                    processed_results[-1]["losses"] = losses
+                    # processed_results[-1]["losses"] = losses
 
                 # panoptic segmentation inference
                 if self.panoptic_on:
