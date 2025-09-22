@@ -68,9 +68,9 @@ class LossEvalHook(HookBase):
             
     def _get_loss(self, metrics_dict):
         print("inside function")
-        print(type(metrics_dict))
-        print(metrics_dict)
-        print(len(metrics_dict))
+        print(type(metrics_dict[0]))
+        print(metrics_dict[0])
+        print(metrics_dict[0].shape)
         metrics_dict = {
             k: v.detach().cpu().item() if isinstance(v, torch.Tensor) else float(v)
             for k, v in metrics_dict.items()
