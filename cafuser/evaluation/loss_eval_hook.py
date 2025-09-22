@@ -46,38 +46,23 @@ class LossEvalHook(HookBase):
                         ),
                         n=5,
                     )
-                print(f"iteration: {idx}")
-                print(f"Input: {type(inputs[0])}")
-                print(f"Input shape: {inputs[0].shape}")
                 output = self._model(inputs)
-                print(f"post model: {idx}")
                 if torch.cuda.is_available():
                     torch.cuda.synchronize()
-                    print("finished syncing")
 
                 loss_batch = self._get_loss(output)
-                print(f"Custom: total loss: {loss_batch}")
                 losses.append(loss_batch)
-            print("Finished")
-            print(losses)
             mean_loss = np.mean(losses)
-            print("Finished calculating loss")
             self.trainer.storage.put_scalar('validation_loss', mean_loss)
             comm.synchronize()
-            print("Finished synchronizing")
 
         return losses
             
     def _get_loss(self, metrics_dict):
-        print("inside function")
-        print(type(metrics_dict[0]["sem_seg"]))
-        print(metrics_dict[0]["sem_seg"])
-        print(metrics_dict[0]["sem_seg"].shape)
         metrics_dict = {
             k: v.detach().cpu().item() if isinstance(v, torch.Tensor) else float(v)
-            for k, v in metrics_dict.items()
+            for k, v in metrics_dict[0].items()
         }
-        print("finished metrics")
         total_losses_reduced = sum(loss for loss in metrics_dict.values())
         return total_losses_reduced
         
