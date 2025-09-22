@@ -47,9 +47,8 @@ class LossEvalHook(HookBase):
                         n=5,
                     )
                 print(f"iteration: {idx}")
-                print(f"Input: {type(inputs)}")
-                print(f"Input len: {len(inputs)}")
-                print(f"Input shape: {inputs.shape}")
+                print(f"Input: {type(inputs[0])}")
+                print(f"Input shape: {inputs[0].shape}")
                 output = self._model(inputs)
                 print(f"post model: {idx}")
                 if torch.cuda.is_available():
