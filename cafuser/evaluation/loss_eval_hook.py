@@ -47,7 +47,8 @@ class LossEvalHook(HookBase):
                         n=5,
                     )
                 print(f"iteration: {idx}")
-                print(f"Input shape: {type(inputs)}")
+                print(f"Input: {type(inputs)}")
+                print(f"Input len: {len(inputs)}")
                 print(f"Input shape: {inputs.shape}")
                 output = self._model(inputs)
                 print(f"post model: {idx}")
