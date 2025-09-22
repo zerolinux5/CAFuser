@@ -36,6 +36,10 @@ INPUT:
     INSTANCE: 0.66
     SEMANTIC: 0.33
   SIZE_DIVISIBILITY: -1
+  CROP:
+    ENABLED: True
+    TYPE: "absolute"
+    SIZE: [512, 512]
 
 SOLVER:
   WARMUP_FACTOR: 1.0

@@ -98,7 +98,7 @@ def create_deliver_gt_sem_seg_loading_fn(cfg):
         # This makes the evaluation identical the original DELIVER/CMNeXt codebase (https://github.com/jamycheung/DELIVER)
         if cfg.DATASETS.DELIVER.CMNEXT_EQUIVALENT_EVAL:
             array = array.astype(np.uint8)
-            array = np.array(Image.fromarray(array).resize((512,512), Image.NEAREST), dtype=dtype)
+            array = np.array(Image.fromarray(array).resize((1024,1024), Image.NEAREST), dtype=dtype)
 
         return array
 
@@ -447,7 +447,6 @@ class Trainer(DefaultTrainer):
                     results[dataset_name] = {}
                     continue
             results_i = inference_on_dataset(model, data_loader, evaluator)
-            
             results[dataset_name] = results_i
             if comm.is_main_process():
                 assert isinstance(
