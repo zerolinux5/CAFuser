@@ -222,7 +222,8 @@ class Trainer(DefaultTrainer):
                 self.cfg,
                 self.cfg.DATASETS.TEST_SEMANTIC,
                 DELIVERSemanticDatasetMapper(self.cfg,False)
-            )
+            ),
+            self.model.criterion
         ))
         return hooks
 

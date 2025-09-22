@@ -10,10 +10,11 @@ from torch import nn
 from contextlib import ExitStack, contextmanager
 
 class LossEvalHook(HookBase):
-    def __init__(self, eval_period, model, data_loader):
+    def __init__(self, eval_period, model, data_loader, criterion):
         self._model = model
         self._period = eval_period
         self._data_loader = data_loader
+        self._criterion = criterion
     
     def _do_loss_eval(self):
         # Copying inference_on_dataset from evaluator.py
@@ -46,11 +47,11 @@ class LossEvalHook(HookBase):
                         ),
                         n=5,
                     )
-                output = self._model(inputs)
+                pred = self._model(inputs)
                 if torch.cuda.is_available():
                     torch.cuda.synchronize()
 
-                loss_batch = self._get_loss(output)
+                loss_batch = self._get_loss(pred, inputs)
                 losses.append(loss_batch)
             mean_loss = np.mean(losses)
             self.trainer.storage.put_scalar('validation_loss', mean_loss)
@@ -58,12 +59,8 @@ class LossEvalHook(HookBase):
 
         return losses
             
-    def _get_loss(self, metrics_dict):
-        metrics_dict = {
-            k: v.detach().cpu().item() if isinstance(v, torch.Tensor) else float(v)
-            for k, v in metrics_dict[0].items()
-        }
-        total_losses_reduced = sum(loss for loss in metrics_dict.values())
+    def _get_loss(self, preds, targets):
+        losses = self._criterion.forward(preds, targets)
         return total_losses_reduced
         
         
