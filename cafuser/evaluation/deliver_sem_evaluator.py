@@ -74,10 +74,8 @@ class DeliverSemSegEvaluator(SemSegEvaluator):
             synchronize()
             conf_matrix_list = all_gather(self._conf_matrix)
             b_conf_matrix_list = all_gather(self._b_conf_matrix)
-            # loss_list = all_gather(self._losses)
             self._predictions = all_gather(self._predictions)
             self._predictions = list(itertools.chain(*self._predictions))
-            self.losses = list(itertools.chain(*loss_list))
             if not is_main_process():
                 return
 

@@ -191,7 +191,7 @@ class CAFuser(OneFormer):
             for i in range(dec_layers - 1):
                 aux_weight_dict.update({k + f"_{i}": v for k, v in weight_dict.items()})
             weight_dict.update(aux_weight_dict)
-
+        print("IS THIS RUN?")
         criterion = SetCriterion(
             sem_seg_head.num_classes,
             matcher=matcher,
