@@ -111,7 +111,7 @@ class DELIVERSemanticDatasetMapper:
                 augs.append(ColorAugSSDTransform(img_format=cfg.INPUT.FORMAT))
             augs.append(T.RandomFlip())
         elif cfg.DATASETS.DELIVER.CMNEXT_EQUIVALENT_EVAL:
-            augs = [T.ResizeTransform(1042,1042,1024,1024, interp)]
+            augs = [T.ResizeTransform(1042,1042,512,512, interp)]
         else:
             augs = []
 

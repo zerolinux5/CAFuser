@@ -49,6 +49,7 @@ from oneformer.evaluation import (
 from cafuser.evaluation import (
     MUSESPanopticEvaluator,
     MUSESSemSegEvaluator,
+    DeliverSemSegEvaluator,
 )
 
 from detectron2.projects.deeplab import add_deeplab_config, build_lr_scheduler
@@ -82,6 +83,7 @@ from time import sleep
 from oneformer.data.build import *
 from oneformer.data.dataset_mappers.dataset_mapper import DatasetMapper
 from PIL import Image
+# import torch.nn.functional as F
 
 def create_deliver_gt_sem_seg_loading_fn(cfg):
     def deliver_gt_sem_seg_loading_fn(filename: str, copy: bool = False, dtype: Optional[Union[np.dtype, str]] = None) -> np.ndarray:
@@ -95,12 +97,12 @@ def create_deliver_gt_sem_seg_loading_fn(cfg):
         # This makes the evaluation identical the original DELIVER/CMNeXt codebase (https://github.com/jamycheung/DELIVER)
         if cfg.DATASETS.DELIVER.CMNEXT_EQUIVALENT_EVAL:
             array = array.astype(np.uint8)
-            array = np.array(Image.fromarray(array).resize((1024,1024), Image.NEAREST), dtype=dtype)
+            array = np.array(Image.fromarray(array).resize((512,512), Image.NEAREST), dtype=dtype)
 
         return array
 
     return deliver_gt_sem_seg_loading_fn
-    
+
 class Trainer(DefaultTrainer):
     """
     Extension of the Trainer class adapted to CAFuser.
@@ -161,7 +163,7 @@ class Trainer(DefaultTrainer):
         if evaluator_type == "deliver_semantic_seg":
             if cfg.MODEL.TEST.SEMANTIC_ON:
                 sem_seg_loading_fn = create_deliver_gt_sem_seg_loading_fn(cfg)
-                evaluator_list.append(SemSegEvaluator(dataset_name, distributed=True, output_dir=output_folder,
+                evaluator_list.append(DeliverSemSegEvaluator(dataset_name, distributed=True, output_dir=output_folder,
                                                         sem_seg_loading_fn=sem_seg_loading_fn))
             if cfg.MODEL.TEST.PANOPTIC_ON or cfg.MODEL.TEST.INSTANCE_ON:
                 raise Exception("The DELIVER segmentation dataset does not support panoptic or instance evaluation")
@@ -431,7 +433,7 @@ class Trainer(DefaultTrainer):
                     results[dataset_name] = {}
                     continue
             results_i = inference_on_dataset(model, data_loader, evaluator)
-
+            
             results[dataset_name] = results_i
             if comm.is_main_process():
                 assert isinstance(
