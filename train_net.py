@@ -215,16 +215,16 @@ class Trainer(DefaultTrainer):
                      
     def build_hooks(self):
         hooks = super().build_hooks()
-        hooks.insert(-1,LossEvalHook(
-            self.cfg.TEST.EVAL_PERIOD,
-            self.model,
-            build_detection_test_loader(
-                self.cfg,
-                self.cfg.DATASETS.TEST_SEMANTIC,
-                DELIVERSemanticDatasetMapper(self.cfg,False)
-            ),
-            self.model.criterion
-        ))
+        # hooks.insert(-1,LossEvalHook(
+        #     self.cfg.TEST.EVAL_PERIOD,
+        #     self.model,
+        #     build_detection_test_loader(
+        #         self.cfg,
+        #         self.cfg.DATASETS.TEST_SEMANTIC,
+        #         DELIVERSemanticDatasetMapper(self.cfg,False)
+        #     ),
+        #     self.model.criterion
+        # ))
         return hooks
 
     @classmethod

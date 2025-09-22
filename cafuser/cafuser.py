@@ -308,33 +308,33 @@ class CAFuser(OneFormer):
             features = self.fuse_features(features)
 
         outputs = self.sem_seg_head(features, tasks)
+        texts = torch.cat([self.text_tokenizer(x["text"]).to(self.device).unsqueeze(0) for x in batched_inputs], dim=0)
+        texts_x = self.encode_text(texts)
+
+        outputs = {**outputs, **texts_x}
+
+        if self.condition_text_encoder_module:
+            text_condition = self.condition_text_encoder_module(batched_inputs)
+            outputs = {**outputs, **q_condition_contrastive_logits, **text_condition}
+
+        # mask classification target
+        if "instances" in batched_inputs[0]:
+            gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
+            targets = self.prepare_targets(gt_instances, images)
+        else:
+            targets = None
+
+        # bipartite matching-based loss
+        losses = self.criterion(outputs, targets)
+
+        for k in list(losses.keys()):
+            if k in self.criterion.weight_dict:
+                losses[k] *= self.criterion.weight_dict[k]
+            else:
+                # remove this loss if not specified in `weight_dict`
+                losses.pop(k)
 
         if self.training:
-            texts = torch.cat([self.text_tokenizer(x["text"]).to(self.device).unsqueeze(0) for x in batched_inputs], dim=0)
-            texts_x = self.encode_text(texts)
-
-            outputs = {**outputs, **texts_x}
-
-            if self.condition_text_encoder_module:
-                text_condition = self.condition_text_encoder_module(batched_inputs)
-                outputs = {**outputs, **q_condition_contrastive_logits, **text_condition}
-
-            # mask classification target
-            if "instances" in batched_inputs[0]:
-                gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
-                targets = self.prepare_targets(gt_instances, images)
-            else:
-                targets = None
-
-            # bipartite matching-based loss
-            losses = self.criterion(outputs, targets)
-
-            for k in list(losses.keys()):
-                if k in self.criterion.weight_dict:
-                    losses[k] *= self.criterion.weight_dict[k]
-                else:
-                    # remove this loss if not specified in `weight_dict`
-                    losses.pop(k)
             return losses
         else:
             mask_cls_results = outputs["pred_logits"]
@@ -370,6 +370,7 @@ class CAFuser(OneFormer):
                     if not self.sem_seg_postprocess_before_inference:
                         r = retry_if_cuda_oom(sem_seg_postprocess)(r, image_size, height, width)
                     processed_results[-1]["sem_seg"] = r
+                    processed_results[-1]["losses"] = losses
 
                 # panoptic segmentation inference
                 if self.panoptic_on:
